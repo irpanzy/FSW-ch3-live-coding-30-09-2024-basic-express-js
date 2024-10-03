@@ -63,6 +63,34 @@ app.post("/api/v1/cars", (req, res) => {
     );
 });
 
+app.get("/api/v1/cars/:id", (req, res) => {
+    // select * from fsw2 where id = 1 OR NAME = "Irpan"
+    const id = req.params.id;
+    console.log(id);
+
+    // const car = cars.find((i) => console.log(typeof i.id));
+    const car = cars.find((i) => i.id == id);
+    console.log(car);
+
+    // salah satu basic error handling
+    if (!car) {
+        console.log("data not found");
+        return res.status(404).json({
+            status: "Failed",
+            message: "Data not found",
+        });
+    }
+    
+    res.status(200).json({
+        status: "Success!",
+        message: "Success get cars data",
+        isSuccess: true,
+        data: { 
+            car, 
+        },
+    });
+});
+
 // middleware / handler untuk url yang tidak dapat diakses karena memang tidak ada di aplikasi
 // membuat middleware = our own middleware
 app.use((req, res, next) => {
