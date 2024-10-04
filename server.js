@@ -49,51 +49,27 @@ const cars = JSON.parse(
   fs.readFileSync(`${__dirname}/assets/data/cars.json`, "utf-8")
 );
 
-// response.data.cars
-app.post("/api/v1/cars", (req, res) => {
-    const newCar = req.body;
-  
-    cars.push(newCar);
-    fs.writeFile(
-      `${__dirname}/assets/data/cars.json`,
-      JSON.stringify(cars),
-      (err) => {
-        res.status(200).json({
-          status: "200",
-          message: "Success get cars data",
-          data: { car: newCar },
-        });
-      }
-    );
-  });
+app.get("/api/v1/cars/:id", (req, res) => {
+  // SELECT * FROM
+  // console.log({ data: req.params.id });
+  const id = req.params.id;
+  console.log(id);
+  const car = cars.find((i) => i.id == id);
 
-  app.get("/api/v1/cars/:id", (req, res) => {
-    // Select * from fsw 2 where id = "1" or name = "IRpan"
-    console.log(req.params.id);
-    // const newCar = req.body;
-    const id = req.params.id * 1;
-  
-    const car = cars.find((car) => car.id === id);
-  
-    //  salah satu basic error handling
-    if (!car) {
-      return res.status(404).json({
-        status: "404",
-        message: `Failed get data get car data this id: ${id}`,
-        isSuccess: false,
-        data: null,
-      });
-    }
-  
-    // cars.push(newCar);
-  
-    return res.status(200).json({
-      status: "200",
-      message: "Success add new cars data",
-      isSuccess: true,
-      data: { car },
+  if (!car) {
+    return res.status(404).json({
+      status: "Failed!",
+      message: `Failed get data from id: ${id}`,
+      isSuccess: false,
+      data: null,
     });
+  }
+
+  res.status(200).json({
+    status: "Success",
+    car: { car },
   });
+});
 
 // middleware / handler untuk url yang tidak dapat diakses karena memang tidak ada di aplikasi
 // membuat middleware = our own middleware
