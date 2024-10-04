@@ -1,8 +1,8 @@
 const fs = require("fs");
 // const http = require("http");
 const express = require("express");
-
 const app = express();
+const port = 3000;
 
 // middleware untuk membaca json dari request body(client) ke kita
 app.use(express.json());
@@ -10,7 +10,7 @@ app.use(express.json());
 // default url = health check
 app.get("/", (req, res) => {
     res.status(200).json({
-        status: "Success",
+        status: "200",
         message: "Application is running good..."
    });
 });
@@ -22,80 +22,84 @@ app.get("/muria", (req, res) => {
     });
 });
 
-const cars = JSON.parse(
-    fs.readFileSync(`${__dirname}/assets/data/cars.json`, "utf-8")
-);
+// API/v1/(collection) => collection nya harus jamak
+app.get("/api/v1/cars", async (req, res) => {
+  try {
+    const cars = JSON.parse(
+      await fs.promises.readFile(`${__dirname}/assets/data/cars.json`, "utf-8")
+    );
 
-// api/v1/(collection nya) -> collection nya ini harus JAMAK (s)
-app.get("/api/v1/cars", (req, res) => {
     res.status(200).json({
-        status: "success",
-        message: "Success get cars data",
-        isSuccess: true,
-        totalData: cars.length,
-        data: {
-            cars,
-        },
+      status: "200",
+      message: "Success get cars data",
+      isSuccess: true,
+      data: cars,
     });
+  } catch (error) {
+    res.status(500).json({
+      status: "500",
+      message: "Failed to get cars data",
+      isSuccess: false,
+      error: error.message,
+    });
+  }
 });
 
+const cars = JSON.parse(
+  fs.readFileSync(`${__dirname}/assets/data/cars.json`, "utf-8")
+);
+
 // response.data.cars
-
 app.post("/api/v1/cars", (req, res) => {
-    // insert into .......
     const newCar = req.body;
-
+  
     cars.push(newCar);
-
-    fs.writeFileSync(
-        `${__dirname}/assets/data/cars.json`, 
-        JSON.stringify(cars), 
-        (err) => {
-        res.status(201).json({
-            status: "success",
-            message: "Success add cars data",
-            isSuccess: true,
-            data: {
-                cars,
-            },
+    fs.writeFile(
+      `${__dirname}/assets/data/cars.json`,
+      JSON.stringify(cars),
+      (err) => {
+        res.status(200).json({
+          status: "200",
+          message: "Success get cars data",
+          data: { car: newCar },
         });
       }
     );
-});
+  });
 
-app.get("/api/v1/cars/:id", (req, res) => {
-    // select * from fsw2 where id = 1 OR NAME = "Irpan"
-    const id = req.params.id;
-    console.log(id);
-
-    // const car = cars.find((i) => console.log(typeof i.id));
-    const car = cars.find((i) => i.id == id);
-    console.log(car);
-
-    // salah satu basic error handling
+  app.get("/api/v1/cars/:id", (req, res) => {
+    // Select * from fsw 2 where id = "1" or name = "IRpan"
+    console.log(req.params.id);
+    // const newCar = req.body;
+    const id = req.params.id * 1;
+  
+    const car = cars.find((car) => car.id === id);
+  
+    //  salah satu basic error handling
     if (!car) {
-        console.log("data not found");
-        return res.status(404).json({
-            status: "Failed",
-            message: "Data not found",
-        });
+      return res.status(404).json({
+        status: "404",
+        message: `Failed get data get car data this id: ${id}`,
+        isSuccess: false,
+        data: null,
+      });
     }
-    
-    res.status(200).json({
-        status: "Success!",
-        message: "Success get cars data",
-        isSuccess: true,
-        data: { 
-            car, 
-        },
+  
+    // cars.push(newCar);
+  
+    return res.status(200).json({
+      status: "200",
+      message: "Success add new cars data",
+      isSuccess: true,
+      data: { car },
     });
-});
+  });
 
 // middleware / handler untuk url yang tidak dapat diakses karena memang tidak ada di aplikasi
 // membuat middleware = our own middleware
 app.use((req, res, next) => {
     res.status(404).json({
-        status: "Failed",
+        status: "404",
         message: "API not exist",
     });
 });
